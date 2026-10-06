@@ -1,0 +1,19 @@
+package com.lunchpool.web;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.ui.Model;
+
+@Controller
+public class ErrorController implements org.springframework.boot.web.servlet.error.ErrorController {
+    private static final Logger log = LoggerFactory.getLogger(ErrorController.class);
+
+    @RequestMapping("/error")
+    String error(Model m) {
+        log.error("Unhandled application error occurred");
+        m.addAttribute("message", "The database may be waking up. Please try again in a moment.");
+        return "error";
+    }
+}

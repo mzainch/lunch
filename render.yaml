@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: lunch-pool
+    runtime: docker
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: APP_PASSWORD
+        sync: false

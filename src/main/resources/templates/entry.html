@@ -1,0 +1,121 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Daily Entry')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<div th:replace="~{fragments :: flash}"></div>
+<main class="wrap">
+	<p class="eyebrow">Quick entry</p>
+	<h1>Daily lunch</h1>
+	<form method="post" class="space" id="entry-form" th:attr="data-existing-id=${existingDayId}">
+		<input type="hidden" name="_csrf" th:value="${_csrf.token}">
+		<input th:if="${daily != null}" type="hidden" name="id" th:value="${daily.day.id}">
+		<label>Date<input id="entry-date" type="date" name="date" th:max="${today}" th:value="${date}"></label>
+		<label>Total bill<input id="bill" type="number" name="bill" min="0" step="1" required th:readonly="${viewOnly}" th:value="${daily != null ? @money.format(daily.day.billMinor) : '0'}"></label>
+		<p class="preview" id="preview">0 ordering out -&gt; 0 each</p>
+		<label class="who">Who Is This?
+			<select id="who" name="updatedBy" th:disabled="${viewOnly}">
+				<option value="">Select a friend</option>
+				<option th:each="f : ${friends}" th:value="${f.name}" th:text="${f.name}"></option>
+			</select>
+		</label>
+		<div class="people" th:each="f : ${friends}">
+			<strong th:text="${f.name}"></strong>
+			<div class="seg">
+				<label><input type="radio" th:disabled="${viewOnly}" th:checked="${currentStatuses.get(f.id) == 'ORDERED_OUT'}" th:name="'status_'+${f.id}" value="ORDERED_OUT"><span>No Salan</span></label>
+				<label><input type="radio" th:disabled="${viewOnly}" th:checked="${currentStatuses.get(f.id) == 'BROUGHT_HOME_FOOD'}" th:name="'status_'+${f.id}" value="BROUGHT_HOME_FOOD"><span>Brought Salan</span></label>
+				<label><input type="radio" th:disabled="${viewOnly}" th:checked="${currentStatuses.get(f.id) == 'NO_LUNCH'}" th:name="'status_'+${f.id}" value="NO_LUNCH"><span>No lunch</span></label>
+			</div>
+		</div>
+		<p class="warning" id="warning"></p>
+		<button th:if="${!viewOnly}" class="button dark big" id="save-button" type="button">Save day</button>
+	</form>
+	<section class="list">
+		<h2>This month's entries</h2>
+		<th:block th:if="${monthDays != null and !#lists.isEmpty(monthDays)}">
+			<th:block th:each="day : ${monthDays}">
+				<p th:attr="data-day-date=${day.date},data-day-id=${day.id}">
+					<span th:text="${day.date}"></span>
+					<span th:text="${@money.format(day.billMinor)}"></span>
+					<a class="button" th:href="@{/entry/view(date=${day.date},id=${day.id})}">View</a>
+					<a class="button" th:href="@{/entry(date=${day.date},id=${day.id})}">Edit</a>
+					<form method="post" action="/entry/delete" class="inline">
+					<input type="hidden" name="_csrf" th:value="${_csrf.token}">
+					<input type="hidden" name="date" th:value="${day.date}">
+					<input type="hidden" name="id" th:value="${day.id}">
+					<button>Delete</button>
+					</form>
+				</p>
+			</th:block>
+		</th:block>
+		<p th:if="${monthDays == null or #lists.isEmpty(monthDays)}">No entries for this month yet.</p>
+	</section>
+</main>
+<dialog id="duplicate-dialog">
+	<h2>Record already exists</h2>
+	<p>There is already a record for this date. Do you want to edit that record or create a new one?</p>
+	<div class="dialog-actions">
+		<button type="button" id="edit-existing" class="button dark">Edit existing</button>
+		<button type="button" id="create-new" class="button">Create new</button>
+		<button type="button" id="cancel-save" class="button">Cancel</button>
+	</div>
+</dialog>
+<script>
+	const form = document.querySelector('#entry-form');
+	const bill = document.querySelector('#bill');
+	const preview = document.querySelector('#preview');
+	const warning = document.querySelector('#warning');
+	const who = document.querySelector('#who');
+	const date = document.querySelector('#entry-date');
+	who.value = localStorage.getItem('lunch-who') || '';
+	const saveButton = document.querySelector('#save-button');
+	const duplicateDialog = document.querySelector('#duplicate-dialog');
+	const dayIds = Object.fromEntries([...document.querySelectorAll('[data-day-date]')]
+		.map(day => [day.dataset.dayDate, day.dataset.dayId]));
+	let existingDayId = form.dataset.existingId || dayIds[date.value] || '';
+	function clearRecord() {
+		const hiddenId = form.querySelector('input[name="id"]');
+		if (hiddenId) hiddenId.remove();
+		existingDayId = dayIds[date.value] || '';
+		bill.value = '0';
+		form.querySelectorAll('input[type="radio"]').forEach(input => input.checked = false);
+		update();
+	}
+	function submitEntry(createNew) {
+		if (createNew) {
+			const hiddenId = form.querySelector('input[name="id"]');
+			if (hiddenId) hiddenId.remove();
+		} else if (!form.querySelector('input[name="id"]') && existingDayId) {
+			const input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = 'id';
+			input.value = existingDayId;
+			form.append(input);
+		}
+		localStorage.setItem('lunch-who', who.value);
+		form.submit();
+	}
+	if (saveButton) saveButton.addEventListener('click', () => {
+		if (!form.querySelector('input[name="id"]') && existingDayId && duplicateDialog) duplicateDialog.showModal();
+		else submitEntry(false);
+	});
+	if (duplicateDialog) {
+		document.querySelector('#edit-existing').addEventListener('click', () => submitEntry(false));
+		document.querySelector('#create-new').addEventListener('click', () => submitEntry(true));
+		document.querySelector('#cancel-save').addEventListener('click', () => duplicateDialog.close());
+	}
+	date.addEventListener('change', clearRecord);
+	function update() {
+		const count = form.querySelectorAll('input[value="ORDERED_OUT"]:checked').length;
+		const amount = Number(bill.value || 0);
+		const each = count ? amount / count : 0;
+		preview.textContent = count + ' ordering out -> ' + Math.round(each) + ' each';
+		warning.textContent = count === 0 && amount > 0 ? 'Bill entered but nobody ordered out.'
+			: count > 0 && amount === 0 ? 'Ordering out is selected but the bill is 0.' : '';
+	}
+	form.addEventListener('change', update);
+	bill.addEventListener('input', update);
+	update();
+</script>
+</body>
+</html>

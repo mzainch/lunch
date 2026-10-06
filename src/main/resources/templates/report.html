@@ -1,0 +1,22 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Friend report')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<div th:replace="~{fragments :: flash}"></div>
+<main class="wrap">
+  <p class="eyebrow" th:text="${summary.month}"></p>
+  <h1 th:text="${row.friend.name} + ' report'"></h1>
+  <p>Days without brought lunch and the amount deducted.</p>
+  <section class="panel">
+    <p th:if="${#lists.isEmpty(row.report)}">No deductions this month.</p>
+    <div class="friend" th:each="day : ${row.report}">
+      <strong th:text="${day.date}"></strong>
+      <span th:text="${@money.format(day.amount)}"></span>
+    </div>
+    <p><b>Total deducted:</b> <span th:text="${@money.format(row.spent)}"></span></p>
+    <p><b>Balance:</b> <span th:text="${@money.format(row.balance)}"></span></p>
+  </section>
+</main>
+</body>
+</html>

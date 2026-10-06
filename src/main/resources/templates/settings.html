@@ -1,0 +1,28 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Friends & Settings')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<div th:replace="~{fragments :: flash}"></div>
+<main class="wrap">
+	<h1>Friends & settings</h1>
+	<form method="post" action="/settings/friend" class="panel">
+		<input type="hidden" name="_csrf" th:value="${_csrf.token}">
+		<h2>Add a friend</h2>
+		<label>Name<input name="name" required placeholder="Name"></label>
+		<label>Amount<input type="number" name="amount" min="0" step="1" value="0"></label>
+		<button class="button dark">Add</button>
+	</form>
+	<div class="panel">
+		<h2>Manage friends</h2>
+		<form th:each="f : ${friends}" method="post" th:action="@{/settings/friend/{id}(id=${f.id})}" class="friend">
+			<input type="hidden" name="_csrf" th:value="${_csrf.token}">
+			<input name="name" th:value="${f.name}">
+			<label>Amount<input type="number" name="amount" min="0" step="1" th:value="${@money.format(f.startingAmountMinor)}"></label>
+			<label><input type="checkbox" name="active" value="true" th:checked="${f.active}"> Active</label>
+			<button class="button">Save</button>
+		</form>
+	</div>
+</main>
+</body>
+</html>

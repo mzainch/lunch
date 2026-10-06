@@ -1,0 +1,27 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Dues')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<div th:replace="~{fragments :: flash}"></div>
+<main class="wrap">
+  <h1>Dues</h1>
+  <form class="monthbar">
+    <input name="month" type="month" th:value="${month}" onchange="this.form.submit()">
+  </form>
+  <section class="panel">
+    <div class="friend" th:each="f : ${friends}">
+      <strong th:text="${f.name}"></strong>
+      <span>Balance: <b th:text="${@money.format(balances.getOrDefault(f.id, 0))}"></b></span>
+      <form method="post" action="/dues">
+        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+        <input type="hidden" name="month" th:value="${month}">
+        <input type="hidden" name="friendId" th:value="${f.id}">
+        <label>Money received<input type="number" name="amount" min="0" step="1" th:value="${@money.format(paid.getOrDefault(f.id, 0))}"></label>
+        <button class="button">Update</button>
+      </form>
+    </div>
+  </section>
+</main>
+</body>
+</html>

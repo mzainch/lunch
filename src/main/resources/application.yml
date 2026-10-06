@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/lunchpool}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 0
+      connection-timeout: 30000
+      initialization-fail-timeout: -1
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    connect-retries: 10
+    connect-retries-interval: 5
+  main:
+    lazy-initialization: true
+  thymeleaf:
+    cache: true
+logging:
+  file:
+    name: logs/lunchpool.log
+  level:
+    root: INFO
+    com.lunchpool: INFO
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: true
+        same-site: lax
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    db:
+      enabled: false
