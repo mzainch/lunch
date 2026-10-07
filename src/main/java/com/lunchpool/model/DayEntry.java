@@ -1,6 +1,7 @@
 package com.lunchpool.model;
 
 import jakarta.persistence.*;
+import java.time.Instant;
 
 @Entity
 @Table(name = "day_entries")
@@ -17,6 +18,10 @@ public class DayEntry {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt = Instant.now();
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt = Instant.now();
 
     protected DayEntry() {
     }
@@ -37,5 +42,10 @@ public class DayEntry {
 
     public Status getStatus() {
         return status;
+    }
+
+    @PreUpdate
+    void markUpdated() {
+        updatedAt = Instant.now();
     }
 }

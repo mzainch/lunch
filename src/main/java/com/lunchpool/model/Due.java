@@ -2,6 +2,7 @@ package com.lunchpool.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.Instant;
 
 @Entity
 @Table(name = "dues", uniqueConstraints = @UniqueConstraint(name = "uk_dues_month_friend", columnNames = { "month",
@@ -17,6 +18,10 @@ public class Due {
     private Friend friend;
     @Column(name = "amount_minor", nullable = false)
     private int amountMinor;
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt = Instant.now();
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt = Instant.now();
 
     protected Due() {
     }
@@ -41,5 +46,10 @@ public class Due {
 
     public void setAmountMinor(int amountMinor) {
         this.amountMinor = amountMinor;
+    }
+
+    @PreUpdate
+    void markUpdated() {
+        updatedAt = Instant.now();
     }
 }

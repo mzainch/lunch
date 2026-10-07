@@ -19,6 +19,8 @@ public class Friend {
     private int startingAmountMinor;
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt = Instant.now();
 
     protected Friend() {
     }
@@ -63,5 +65,10 @@ public class Friend {
 
     public void setStartingAmountMinor(int v) {
         startingAmountMinor = v;
+    }
+
+    @PreUpdate
+    void markUpdated() {
+        updatedAt = Instant.now();
     }
 }

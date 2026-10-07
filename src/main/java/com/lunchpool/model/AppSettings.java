@@ -1,6 +1,7 @@
 package com.lunchpool.model;
 
 import jakarta.persistence.*;
+import java.time.Instant;
 
 @Entity
 @Table(name = "settings")
@@ -11,6 +12,10 @@ public class AppSettings {
     private int poolMinor;
     @Column(nullable = false)
     private String currency;
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt = Instant.now();
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt = Instant.now();
 
     protected AppSettings() {
     }
@@ -25,5 +30,10 @@ public class AppSettings {
 
     public String getCurrency() {
         return currency;
+    }
+
+    @PreUpdate
+    void markUpdated() {
+        updatedAt = Instant.now();
     }
 }

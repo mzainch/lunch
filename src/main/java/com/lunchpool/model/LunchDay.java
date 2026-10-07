@@ -13,6 +13,8 @@ public class LunchDay {
     private LocalDate date;
     @Column(name = "bill_minor", nullable = false)
     private int billMinor;
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt = Instant.now();
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt = Instant.now();
     @Column(name = "updated_by")
@@ -56,6 +58,11 @@ public class LunchDay {
     }
 
     public void touch() {
+        updatedAt = Instant.now();
+    }
+
+    @PreUpdate
+    void markUpdated() {
         updatedAt = Instant.now();
     }
 }
