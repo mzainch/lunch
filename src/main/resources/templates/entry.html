@@ -25,9 +25,9 @@
 		<div class="people" th:each="f : ${friends}">
 			<strong th:text="${f.name}"></strong>
 			<div class="seg">
-				<label><input type="radio" th:disabled="${viewOnly}" th:checked="${currentStatuses.get(f.id) == 'ORDERED_OUT'}" th:name="'status_'+${f.id}" value="ORDERED_OUT"><span>No Salan</span></label>
-				<label><input type="radio" th:disabled="${viewOnly}" th:checked="${currentStatuses.get(f.id) == 'BROUGHT_HOME_FOOD'}" th:name="'status_'+${f.id}" value="BROUGHT_HOME_FOOD"><span>Brought Salan</span></label>
-				<label><input type="radio" th:disabled="${viewOnly}" th:checked="${currentStatuses.get(f.id) == 'NO_LUNCH'}" th:name="'status_'+${f.id}" value="NO_LUNCH"><span>No lunch</span></label>
+				<label><input type="radio" th:disabled="${viewOnly}" th:checked="${currentStatuses.get(f.id) == 'ORDERED_OUT'}" th:name="'status_'+${f.id}" value="ORDERED_OUT"><span>Salan Gayab Hai</span></label>
+				<label><input type="radio" th:disabled="${viewOnly}" th:checked="${currentStatuses.get(f.id) == 'BROUGHT_HOME_FOOD'}" th:name="'status_'+${f.id}" value="BROUGHT_HOME_FOOD"><span>Apna Jugaad Hai</span></label>
+				<label><input type="radio" th:disabled="${viewOnly}" th:checked="${currentStatuses.get(f.id) == 'NO_LUNCH'}" th:name="'status_'+${f.id}" value="NO_LUNCH"><span>Scene Off hai</span></label>
 			</div>
 		</div>
 		<p class="warning" id="warning"></p>
