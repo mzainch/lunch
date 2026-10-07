@@ -109,33 +109,15 @@ public class LunchService {
     @Transactional
     public void updateFriend(long id, String name, boolean active) {
         var friend = friends.findById(id).orElseThrow();
-        updateFriend(friend, name, active, friend.getStartingAmountMinor());
+        updateFriend(friend, name, active);
     }
 
-    @Transactional
-    public void updateFriend(long id, String name, boolean active, int startingAmountMinor) {
-        var friend = friends.findById(id).orElseThrow();
-        updateFriend(friend, name, active, startingAmountMinor);
-    }
-
-    private void updateFriend(Friend f, String name, boolean active, int startingAmountMinor) {
-        if (startingAmountMinor < 0)
-            throw new IllegalArgumentException("Amount cannot be negative");
+    private void updateFriend(Friend f, String name, boolean active) {
         if (f.isActive() && !active && currentBalance(f) < 0)
             throw new IllegalStateException("A friend with an outstanding balance cannot be deactivated");
         f.setName(name.trim());
         f.setActive(active);
-        f.setStartingAmountMinor(startingAmountMinor);
         friends.save(f);
-    }
-
-    @Transactional
-    public Friend addFriend(String name, int startingAmountMinor) {
-        if (startingAmountMinor < 0)
-            throw new IllegalArgumentException("Amount cannot be negative");
-        var friend = new Friend(name.trim(), allFriends().size());
-        friend.setStartingAmountMinor(startingAmountMinor);
-        return friends.save(friend);
     }
 
     @Transactional
@@ -160,7 +142,8 @@ public class LunchService {
             throw new IllegalStateException("Cannot add an amount for an inactive friend");
         var due = dues.findByMonthAndFriend(month.atDay(1), friend)
                 .orElseGet(() -> new Due(month.atDay(1), friend, 0));
-        due.setAmountMinor(amountMinor);
+        int temp = due.getAmountMinor() + amountMinor;
+        due.setAmountMinor(temp);
         dues.save(due);
     }
 
@@ -206,9 +189,8 @@ public class LunchService {
                 .map(f -> {
                     var spent = spentMap.getOrDefault(f.getId(), 0);
                     var paid = duesMap.getOrDefault(f.getId(), 0);
-                    var starting = f.getStartingAmountMinor();
-                    var available = starting + paid;
-                    return new SummaryRow(f, available - spent, spent, paid,
+                    var opening = balanceBefore(f, month);
+                    return new SummaryRow(f, opening + paid - spent, spent, paid,
                             List.copyOf(reports.getOrDefault(f.getId(), List.of())));
                 })
                 .toList();
@@ -218,17 +200,31 @@ public class LunchService {
 
     private long currentBalance(Friend friend) {
         var allEntries = entries.findAll();
-        var entriesByDay = allEntries.stream().collect(java.util.stream.Collectors.groupingBy(DayEntry::getDay));
+        int spent = spentFor(friend, allEntries);
+        var paid = dues.findByFriend(friend).stream().mapToInt(Due::getAmountMinor).sum();
+        return friend.getStartingAmountMinor() + paid - spent;
+    }
+
+    private int balanceBefore(Friend friend, YearMonth month) {
+        var previousEntries = entries.findBefore(month.atDay(1));
+        var spent = spentFor(friend, previousEntries);
+        var paid = dues.findByFriend(friend).stream()
+                .filter(d -> d.getMonth().isBefore(month.atDay(1)))
+                .mapToInt(Due::getAmountMinor).sum();
+        return friend.getStartingAmountMinor() + paid - spent;
+    }
+
+    private int spentFor(Friend friend, List<DayEntry> dayEntries) {
+        var entriesByDay = dayEntries.stream().collect(java.util.stream.Collectors.groupingBy(DayEntry::getDay));
         int spent = 0;
-        for (var dayEntries : entriesByDay.entrySet()) {
-            var day = dayEntries.getKey();
-            var ids = dayEntries.getValue().stream()
+        for (var dayEntriesForDay : entriesByDay.entrySet()) {
+            var day = dayEntriesForDay.getKey();
+            var ids = dayEntriesForDay.getValue().stream()
                     .filter(e -> e.getStatus() == Status.ORDERED_OUT)
                     .map(e -> e.getFriend().getId()).toList();
             spent += PoolCalculator.split(day.getBillMinor(), ids, day.getDate().getDayOfMonth()).shares().stream()
                     .filter(s -> s.friendId() == friend.getId()).mapToInt(PoolCalculator.Share::costMinor).sum();
         }
-        var paid = dues.findByFriend(friend).stream().mapToInt(Due::getAmountMinor).sum();
-        return friend.getStartingAmountMinor() + paid - spent;
+        return spent;
     }
 }

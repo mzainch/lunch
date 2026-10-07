@@ -7,21 +7,22 @@
 <main class="wrap">
   <h1>Dues</h1>
   <form class="monthbar">
-    <input name="month" type="month" th:value="${month}" onchange="this.form.submit()">
+    <input name="month" type="month" th:value="${month}" onchange="this.form.submit()" style="max-width:240px">
   </form>
-  <section class="panel">
-    <div class="friend" th:each="f : ${friends}">
-      <strong th:text="${f.name}"></strong>
-      <span>Balance: <b th:text="${@money.format(balances.getOrDefault(f.id, 0))}"></b></span>
-      <form method="post" action="/dues">
-        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-        <input type="hidden" name="month" th:value="${month}">
-        <input type="hidden" name="friendId" th:value="${f.id}">
-        <label>Money received<input type="number" name="amount" min="0" step="1" th:value="${@money.format(paid.getOrDefault(f.id, 0))}"></label>
-        <button class="button">Update</button>
-      </form>
+  <div class="friend-card" th:each="f : ${friends}">
+    <div>
+      <div class="who-name" th:text="${f.name}"></div>
+      <div class="bal">Balance <b data-count th:text="${@money.format(balances.getOrDefault(f.id, 0))}"></b></div>
+      <div class="bal">Received this month <b data-count th:text="${@money.format(paid.getOrDefault(f.id, 0))}"></b></div>
     </div>
-  </section>
+    <form method="post" action="/dues">
+      <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+      <input type="hidden" name="month" th:value="${month}">
+      <input type="hidden" name="friendId" th:value="${f.id}">
+      <label>Money received<input type="number" name="amount" min="0" step="1" value="0"></label>
+      <button class="button dark">Update</button>
+    </form>
+  </div>
 </main>
 </body>
 </html>

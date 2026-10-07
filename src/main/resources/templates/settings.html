@@ -5,21 +5,19 @@
 <nav th:replace="~{fragments :: nav}"></nav>
 <div th:replace="~{fragments :: flash}"></div>
 <main class="wrap">
-	<h1>Friends & settings</h1>
+	<h1>Friends &amp; settings</h1>
 	<form method="post" action="/settings/friend" class="panel">
 		<input type="hidden" name="_csrf" th:value="${_csrf.token}">
 		<h2>Add a friend</h2>
 		<label>Name<input name="name" required placeholder="Name"></label>
-		<label>Amount<input type="number" name="amount" min="0" step="1" value="0"></label>
-		<button class="button dark">Add</button>
+		<button class="button dark">Add friend</button>
 	</form>
 	<div class="panel">
 		<h2>Manage friends</h2>
-		<form th:each="f : ${friends}" method="post" th:action="@{/settings/friend/{id}(id=${f.id})}" class="friend">
+		<form th:each="f : ${friends}" method="post" th:action="@{/settings/friend/{id}(id=${f.id})}" class="manage">
 			<input type="hidden" name="_csrf" th:value="${_csrf.token}">
-			<input name="name" th:value="${f.name}">
-			<label>Amount<input type="number" name="amount" min="0" step="1" th:value="${@money.format(f.startingAmountMinor)}"></label>
-			<label><input type="checkbox" name="active" value="true" th:checked="${f.active}"> Active</label>
+			<label class="nm">Name<input name="name" th:value="${f.name}"></label>
+			<label class="tog"><input type="checkbox" name="active" value="true" th:checked="${f.active}"><span class="pill"><span class="on">Active</span><span class="off">Inactive</span></span></label>
 			<button class="button">Save</button>
 		</form>
 	</div>

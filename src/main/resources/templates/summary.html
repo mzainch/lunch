@@ -5,12 +5,22 @@
 <nav th:replace="~{fragments :: nav}"></nav>
 <div th:replace="~{fragments :: flash}"></div>
 <main class="wrap">
-	<div class="title"><div><p class="eyebrow">Shared lunch pool</p><h1>Monthly summary</h1></div></div>
-	<form class="monthbar"><input name="month" type="month" th:value="${summary.month}" onchange="this.form.submit()"></form>
-	<div class="table-scroll"><table><thead><tr><th>Friend</th><th>Balance</th><th>Spent</th><th>Last payment</th><th>Report</th></tr></thead><tbody>
-		<tr th:each="r : ${summary.rows}"><td th:text="${r.friend.name}"></td><td th:classappend="${r.balance < 0 ? 'negative':''}" th:text="${@money.format(r.balance)}"></td><td th:text="${@money.format(r.spent)}"></td><td th:text="${@money.format(r.lastPayment)}"></td><td><a class="button" th:href="@{/summary/report(month=${summary.month},friendId=${r.friend.id})}">View report</a></td></tr>
+	<p class="eyebrow">Shared lunch pool</p>
+	<h1>Monthly summary</h1>
+	<form class="monthbar"><input name="month" type="month" th:value="${summary.month}" onchange="this.form.submit()" style="max-width:240px"></form>
+	<section class="stats">
+		<div class="stat"><span>Money received</span><b class="num" data-count data-role="collected" th:text="${@money.format(summary.collected)}"></b></div>
+		<div class="stat"><span>Spent</span><b class="num" data-count data-role="spent" th:text="${@money.format(summary.spent)}"></b></div>
+		<div class="stat key"><span>Balance left</span><b class="num" data-count th:text="${@money.format(summary.remaining)}"></b></div>
+	</section>
+	<div class="meter-wrap"><div class="meter"><i></i></div><span class="note" id="meter-label"></span></div>
+	<div class="table-scroll"><table><thead><tr><th>Friend</th><th>Balance</th><th>Spent</th><th>Last payment</th><th></th></tr></thead><tbody>
+		<tr th:each="r : ${summary.rows}"><td th:text="${r.friend.name}"></td><td data-count th:classappend="${r.balance < 0 ? 'negative':''}" th:text="${@money.format(r.balance)}"></td><td data-count th:text="${@money.format(r.spent)}"></td><td data-count th:text="${@money.format(r.lastPayment)}"></td><td><a class="button" th:href="@{/summary/report(month=${summary.month},friendId=${r.friend.id})}">View report</a></td></tr>
 	</tbody></table></div>
-	<section class="checks"><h2>Total summary</h2><p>Money received: <b th:text="${@money.format(summary.collected)}"></b> | Spent: <b th:text="${@money.format(summary.spent)}"></b> | Balance: <b th:text="${@money.format(summary.remaining)}"></b></p><p>Balance = money received - spent.</p><p th:if="${#lists.isEmpty(summary.flagged)}">No flagged days.</p><p th:each="d : ${summary.flagged}"><a th:href="@{/entry(date=${d.date})}" th:text="${d.date} + ' needs attention'"></a></p></section>
+	<section class="checks"><h2>Needs attention</h2><p class="note">Balance = money received − spent.</p>
+		<p th:if="${#lists.isEmpty(summary.flagged)}">All days look good.</p>
+		<div class="flag" th:each="d : ${summary.flagged}"><a th:href="@{/entry(date=${d.date})}" th:text="${d.date} + ' needs attention'"></a></div>
+	</section>
 </main>
 </body>
 </html>

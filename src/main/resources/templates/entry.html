@@ -7,18 +7,21 @@
 <main class="wrap">
 	<p class="eyebrow">Quick entry</p>
 	<h1>Daily lunch</h1>
+	<div class="entry-grid">
 	<form method="post" class="space" id="entry-form" th:attr="data-existing-id=${existingDayId}">
 		<input type="hidden" name="_csrf" th:value="${_csrf.token}">
 		<input th:if="${daily != null}" type="hidden" name="id" th:value="${daily.day.id}">
-		<label>Date<input id="entry-date" type="date" name="date" th:max="${today}" th:value="${date}"></label>
-		<label>Total bill<input id="bill" type="number" name="bill" min="0" step="1" required th:readonly="${viewOnly}" th:value="${daily != null ? @money.format(daily.day.billMinor) : '0'}"></label>
-		<p class="preview" id="preview">0 ordering out -&gt; 0 each</p>
-		<label class="who">Who Is This?
-			<select id="who" name="updatedBy" th:disabled="${viewOnly}">
-				<option value="">Select a friend</option>
-				<option th:each="f : ${friends}" th:value="${f.name}" th:text="${f.name}"></option>
-			</select>
-		</label>
+		<div class="panel" style="margin:0">
+			<label>Date<input id="entry-date" type="date" name="date" th:max="${today}" th:value="${date}"></label>
+			<label>Total bill<input id="bill" type="number" name="bill" min="0" step="1" required th:readonly="${viewOnly}" th:value="${daily != null ? @money.format(daily.day.billMinor) : '0'}"></label>
+			<p class="preview" id="preview">0 ordering out -&gt; 0 each</p>
+			<label class="who">Who is this?
+				<select id="who" name="updatedBy" th:disabled="${viewOnly}">
+					<option value="">Select a friend</option>
+					<option th:each="f : ${friends}" th:value="${f.name}" th:text="${f.name}"></option>
+				</select>
+			</label>
+		</div>
 		<div class="people" th:each="f : ${friends}">
 			<strong th:text="${f.name}"></strong>
 			<div class="seg">
@@ -33,23 +36,24 @@
 	<section class="list">
 		<h2>This month's entries</h2>
 		<th:block th:if="${monthDays != null and !#lists.isEmpty(monthDays)}">
-			<th:block th:each="day : ${monthDays}">
-				<p th:attr="data-day-date=${day.date},data-day-id=${day.id}">
-					<span th:text="${day.date}"></span>
-					<span th:text="${@money.format(day.billMinor)}"></span>
+			<div class="day" th:each="day : ${monthDays}" th:attr="data-day-date=${day.date},data-day-id=${day.id}">
+				<span class="d" th:text="${day.date}"></span>
+				<span class="amt" th:text="${@money.format(day.billMinor)}"></span>
+				<div class="acts">
 					<a class="button" th:href="@{/entry/view(date=${day.date},id=${day.id})}">View</a>
 					<a class="button" th:href="@{/entry(date=${day.date},id=${day.id})}">Edit</a>
 					<form method="post" action="/entry/delete" class="inline">
-					<input type="hidden" name="_csrf" th:value="${_csrf.token}">
-					<input type="hidden" name="date" th:value="${day.date}">
-					<input type="hidden" name="id" th:value="${day.id}">
-					<button>Delete</button>
+						<input type="hidden" name="_csrf" th:value="${_csrf.token}">
+						<input type="hidden" name="date" th:value="${day.date}">
+						<input type="hidden" name="id" th:value="${day.id}">
+						<button class="button danger">Delete</button>
 					</form>
-				</p>
-			</th:block>
+				</div>
+			</div>
 		</th:block>
-		<p th:if="${monthDays == null or #lists.isEmpty(monthDays)}">No entries for this month yet.</p>
+		<p th:if="${monthDays == null or #lists.isEmpty(monthDays)}" class="note">No entries this month yet. Save a day to start the list.</p>
 	</section>
+	</div>
 </main>
 <dialog id="duplicate-dialog">
 	<h2>Record already exists</h2>

@@ -118,18 +118,17 @@ public class WebController {
     }
 
     @PostMapping("/settings/friend")
-    public String friend(@RequestParam String name, @RequestParam(defaultValue = "0") String amount,
-            RedirectAttributes redirect) {
+    public String friend(@RequestParam String name, RedirectAttributes redirect) {
         if (!name.isBlank())
-            service.addFriend(name, money.toAmount(amount));
+            service.addFriend(name);
         redirect.addFlashAttribute("successMessage", "Friend added successfully.");
         return "redirect:/settings";
     }
 
     @PostMapping("/settings/friend/{id}")
-    public String editFriend(@PathVariable long id, @RequestParam String name, @RequestParam String amount,
+    public String editFriend(@PathVariable long id, @RequestParam String name,
             @RequestParam(defaultValue = "false") boolean active, RedirectAttributes redirect) {
-        service.updateFriend(id, name, active, money.toAmount(amount));
+        service.updateFriend(id, name, active);
         redirect.addFlashAttribute("successMessage", "Friend updated successfully.");
         return "redirect:/settings";
     }

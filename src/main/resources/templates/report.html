@@ -7,16 +7,19 @@
 <main class="wrap">
   <p class="eyebrow" th:text="${summary.month}"></p>
   <h1 th:text="${row.friend.name} + ' report'"></h1>
-  <p>Days without brought lunch and the amount deducted.</p>
+  <p class="lede">Days without brought lunch and the amount deducted.</p>
   <section class="panel">
     <p th:if="${#lists.isEmpty(row.report)}">No deductions this month.</p>
-    <div class="friend" th:each="day : ${row.report}">
+    <div class="report-row" th:each="day : ${row.report}">
       <strong th:text="${day.date}"></strong>
       <span th:text="${@money.format(day.amount)}"></span>
     </div>
-    <p><b>Total deducted:</b> <span th:text="${@money.format(row.spent)}"></span></p>
-    <p><b>Balance:</b> <span th:text="${@money.format(row.balance)}"></span></p>
+    <div class="report-total">
+      <div><span class="note">Total deducted</span><b class="num" data-count th:text="${@money.format(row.spent)}"></b></div>
+      <div><span class="note">Balance</span><b class="num" data-count th:classappend="${row.balance < 0 ? 'negative' : ''}" th:text="${@money.format(row.balance)}"></b></div>
+    </div>
   </section>
+  <p><a class="button" th:href="@{/summary(month=${summary.month})}">Back to summary</a></p>
 </main>
 </body>
 </html>

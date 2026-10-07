@@ -10,7 +10,7 @@ Prerequisites: JDK 21 and Maven 3.9 or newer. Verify with `java -version` and `m
 2. Start PostgreSQL, then run `mvn spring-boot:run`.
 3. Open `http://localhost:8080` and sign in with the shared password.
 
-Amounts are entered as normal currency amounts such as `92.00` and stored as integer minor units. Each friend has a starting amount, and monthly dues can be recorded from the Dues page.
+Amounts are entered as normal currency amounts such as `92.00` and stored as integer minor units. Friends start with a zero balance. Payments recorded from the Dues page increase the selected month's balance, and each month's ending balance carries into the following month.
 
 ## Deploy on Render and Neon
 
@@ -24,11 +24,12 @@ The first request after idle may take about a minute while Render and Neon wake.
 
 ## Worked-example checklist
 
-- [ ] Add Ana, Ben, Cleo, Dev with their starting amounts.
+- [ ] Add Ana, Ben, Cleo, Dev.
 - [ ] Enter Oct 5 bill `900.00` with Ana, Ben, Cleo ordered out: each is `300.00`.
 - [ ] Enter Oct 6 bill `600.00` with Ben, Cleo, Dev ordered out: each is `200.00`.
 - [ ] Enter Oct 7 bill `500.00` with Ana and Dev ordered out: each is `250.00`.
 - [ ] Select October on Summary and verify spent values `55000`, `50000`, `50000`, `45000`.
-- [ ] Verify end balances `145000`, `150000`, `150000`, `155000` and next payments `55000`, `50000`, `50000`, `45000`.
+- [ ] Record dues and verify that they increase the selected month's balances.
+- [ ] Select the following month and verify that the previous month's ending balances carry forward.
 - [ ] Try a bill with nobody ordering out and confirm the day is flagged.
 - [ ] Verify `/ping` returns plain `ok` while unauthenticated.
